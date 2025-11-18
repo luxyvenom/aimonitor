@@ -31,7 +31,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         </Link>
 
         <nav className="flex-1 px-4 py-4 space-y-1 text-sm">
-          <SidebarItem label="Home" to="/" active={isActive("/")} />
+          <SidebarItem label="홈" to="/" active={isActive("/")} />
           <SidebarItem
             label="Dashboard"
             to="/dashboard"
@@ -61,7 +61,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         </nav>
 
         <div className="px-4 py-4 border-t border-app-border/40 text-xs text-app-muted">
-          © {new Date().getFullYear()} RootLab
+          © {new Date().getFullYear()} RootLab. All rights reserved.
         </div>
       </aside>
 
