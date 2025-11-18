@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Text, Sphere, Box } from "@react-three/drei";
 import * as THREE from "three";
+import { getRiskLevelHexColor } from "../utils/riskUtils";
 
 interface Worker3DModelProps {
   heartRate?: number;
@@ -23,16 +24,7 @@ const HumanBody: React.FC<Worker3DModelProps> = ({
 
   // 요추 위험도에 따른 색상
   const getRiskColor = () => {
-    switch (lumbarRiskLevel) {
-      case "high":
-        return "#ef4444"; // app-danger
-      case "medium":
-        return "#facc15"; // app-warning
-      case "low":
-        return "#22c55e"; // app-success
-      default:
-        return "#22c55e";
-    }
+    return getRiskLevelHexColor(lumbarRiskLevel);
   };
 
   // 심박수 위치 (가슴 왼쪽)

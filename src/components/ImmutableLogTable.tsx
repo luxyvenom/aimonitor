@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from "react";
-import type { ImmutableLogEntry, RiskLevel } from "../types/immutableLog.types";
+import type { ImmutableLogEntry, ManagerResponse } from "../types/immutableLog.types";
+import { getRiskLevelColor, getRiskLevelBgColor } from "../utils/riskUtils";
+import { formatDateTime } from "../utils/dateUtils";
 
 interface ImmutableLogTableProps {
   /** 로그 데이터 배열 */
@@ -9,42 +11,10 @@ interface ImmutableLogTableProps {
 }
 
 /**
- * 위험도 레벨에 따른 색상 반환
- */
-const getRiskLevelColor = (riskLevel: RiskLevel): string => {
-  switch (riskLevel) {
-    case "red":
-      return "text-app-danger";
-    case "yellow":
-      return "text-app-warning";
-    case "green":
-      return "text-app-success";
-    default:
-      return "text-app-muted";
-  }
-};
-
-/**
- * 위험도 레벨에 따른 배경 색상 반환
- */
-const getRiskLevelBgColor = (riskLevel: RiskLevel): string => {
-  switch (riskLevel) {
-    case "red":
-      return "bg-app-danger/10 border-app-danger/30";
-    case "yellow":
-      return "bg-app-warning/10 border-app-warning/30";
-    case "green":
-      return "bg-app-success/10 border-app-success/30";
-    default:
-      return "bg-app-surface-soft";
-  }
-};
-
-/**
  * 관리자 대응 상태에 따른 텍스트 반환
  */
 const getManagerResponseText = (
-  response: "yes" | "no" | "pending"
+  response: ManagerResponse
 ): string => {
   switch (response) {
     case "yes":
@@ -62,7 +32,7 @@ const getManagerResponseText = (
  * 관리자 대응 상태에 따른 색상 반환
  */
 const getManagerResponseColor = (
-  response: "yes" | "no" | "pending"
+  response: ManagerResponse
 ): string => {
   switch (response) {
     case "yes":
@@ -73,25 +43,6 @@ const getManagerResponseColor = (
       return "text-app-warning";
     default:
       return "text-app-muted";
-  }
-};
-
-/**
- * 날짜/시간 포맷팅
- */
-const formatDateTime = (date: Date): string => {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffDays > 0) {
-    return `${diffDays}일 전`;
-  } else if (diffHours > 0) {
-    return `${diffHours}시간 전`;
-  } else {
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    return diffMins > 0 ? `${diffMins}분 전` : "방금 전";
   }
 };
 

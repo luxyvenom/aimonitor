@@ -3,8 +3,10 @@
  * 법적 방패 기능을 위한 변조 불가능한 로그 엔트리 타입
  */
 
-export type RiskLevel = "green" | "yellow" | "red";
-export type ManagerResponse = "yes" | "no" | "pending";
+import type { RiskLevel, ManagerResponse } from "./common.types";
+
+// 공통 타입 재export
+export type { RiskLevel, ManagerResponse };
 
 export interface ImmutableLogEntry {
   /** 이벤트 발생 시간 */

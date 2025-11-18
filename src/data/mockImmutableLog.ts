@@ -3,37 +3,9 @@
  * 실제 데이터가 들어오면 이 파일의 데이터를 API 응답으로 교체하면 됩니다.
  */
 
-import type { ImmutableLogEntry, ManagerResponse, RiskLevel } from "../types/immutableLog.types";
-
-/**
- * 작업자 이름 목록
- */
-const workerNames = [
-  "김철수",
-  "이영희",
-  "박민수",
-  "정수진",
-  "최동욱",
-  "한지은",
-  "윤태호",
-  "강미영",
-  "조성우",
-  "임하늘",
-];
-
-/**
- * 시스템 조치 목록
- */
-const systemActions = [
-  "휴식 권고 발송",
-  "작업 중단 요청",
-  "안전 관리자 알림",
-  "의료진 연락 요청",
-  "위험 구역 진입 경고",
-  "안전 장비 점검 요청",
-  "작업 강도 조정 권고",
-  "추가 모니터링 시작",
-];
+import type { ImmutableLogEntry, ManagerResponse } from "../types/immutableLog.types";
+import { WORKER_NAMES, SYSTEM_ACTIONS } from "../constants/common";
+import { getRiskLevelFromScore } from "../utils/riskUtils";
 
 /**
  * Mock Immutable Log 데이터 생성
@@ -50,29 +22,22 @@ export const generateMockImmutableLog = (): ImmutableLogEntry[] => {
     const timestamp = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
 
     // 작업자 랜덤 선택
-    const workerIndex = Math.floor(Math.random() * workerNames.length);
+    const workerIndex = Math.floor(Math.random() * WORKER_NAMES.length);
     const workerId = `W${String(workerIndex + 1).padStart(3, "0")}`;
-    const workerName = workerNames[workerIndex];
+    const workerName = WORKER_NAMES[workerIndex];
 
     // 위험도 스코어 생성 (0-100)
     // Red Zone 확률을 높이기 위해 가중치 적용
     const riskScore = Math.floor(Math.random() * 100);
     
     // 위험도 레벨 결정
-    let riskLevel: RiskLevel;
-    if (riskScore >= 70) {
-      riskLevel = "red";
-    } else if (riskScore >= 40) {
-      riskLevel = "yellow";
-    } else {
-      riskLevel = "green";
-    }
+    const riskLevel = getRiskLevelFromScore(riskScore);
 
     // Red Zone일 경우 더 강력한 조치
     const systemAction =
       riskLevel === "red"
-        ? systemActions[Math.floor(Math.random() * 4)] // 상위 4개 조치
-        : systemActions[Math.floor(Math.random() * systemActions.length)];
+        ? SYSTEM_ACTIONS[Math.floor(Math.random() * 4)] // 상위 4개 조치
+        : SYSTEM_ACTIONS[Math.floor(Math.random() * SYSTEM_ACTIONS.length)];
 
     // 관리자 대응 상태
     // Red Zone은 대부분 "yes" 또는 "pending", Green은 "pending" 또는 "no"

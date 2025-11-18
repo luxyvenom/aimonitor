@@ -33,28 +33,28 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         <nav className="flex-1 px-4 py-4 space-y-1 text-sm">
           <SidebarItem label="홈" to="/" active={isActive("/")} />
           <SidebarItem
-            label="Dashboard"
+            label="대시보드"
             to="/dashboard"
             active={isActive("/dashboard")}
           />
-          <SidebarItem label="Teams" to="/teams" active={isActive("/teams")} />
+          <SidebarItem label="팀원" to="/teams" active={isActive("/teams")} />
           <SidebarItem
             label="Monitoring"
             to="/monitoring"
             active={isActive("/monitoring")}
           />
           <SidebarItem
-            label="Reports"
+            label="보고서"
             to="/reports"
             active={isActive("/reports")}
           />
           <SidebarItem
-            label="Immutable Log"
+            label="Log"
             to="/immutable-log"
             active={isActive("/immutable-log")}
           />
           <SidebarItem
-            label="More Options"
+            label="더보기"
             to="/more-options"
             active={isActive("/more-options")}
           />
