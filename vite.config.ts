@@ -4,4 +4,17 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  optimizeDeps: {
+    include: ["three", "@react-three/fiber", "@react-three/drei"],
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          three: ["three"],
+          "react-three": ["@react-three/fiber", "@react-three/drei"],
+        },
+      },
+    },
+  },
 });
