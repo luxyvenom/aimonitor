@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, Suspense } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Text, Sphere, Box } from "@react-three/drei";
 import * as THREE from "three";
@@ -211,13 +211,9 @@ export const Worker3DModel: React.FC<Worker3DModelProps> = (props) => {
   const [riskLevel, setRiskLevel] = useState<"low" | "medium" | "high">(
     props.lumbarRiskLevel || "low"
   );
-  // 클라이언트 사이드 체크 (SSR 방지)
-  const isMounted = typeof window !== "undefined";
 
   // 실시간 위험도 시뮬레이션 (실제로는 API에서 받아올 데이터)
   useEffect(() => {
-    if (!isMounted) return;
-
     const interval = setInterval(() => {
       // 랜덤하게 위험도 변경 (실제로는 센서 데이터 기반)
       const levels: ("low" | "medium" | "high")[] = ["low", "medium", "high"];
@@ -226,16 +222,7 @@ export const Worker3DModel: React.FC<Worker3DModelProps> = (props) => {
     }, 5000); // 5초마다 업데이트
 
     return () => clearInterval(interval);
-  }, [isMounted]);
-
-  // SSR 방지: 클라이언트에서만 렌더링
-  if (!isMounted) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="text-xs text-app-muted">3D 모델 로딩 중...</div>
-      </div>
-    );
-  }
+  }, []);
 
   return (
     <div className="w-full h-full">
@@ -243,50 +230,35 @@ export const Worker3DModel: React.FC<Worker3DModelProps> = (props) => {
         camera={{ position: [2, 1, 3], fov: 50 }}
         shadows
         className="bg-transparent"
-        gl={{
-          antialias: true,
-          alpha: true,
-          powerPreference: "high-performance",
-          preserveDrawingBuffer: true,
-        }}
-        dpr={[1, 2]}
-        onCreated={(state) => {
-          // WebGL 컨텍스트 확인
-          if (!state.gl.getContext()) {
-            console.error("WebGL not supported");
-          }
-        }}
       >
-        <Suspense fallback={null}>
-          {/* 조명 */}
-          <ambientLight intensity={0.5} />
-          <directionalLight
-            position={[5, 5, 5]}
-            intensity={1}
-            castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-          />
-          <pointLight position={[-5, 5, -5]} intensity={0.5} />
+        {/* 조명 */}
+        <ambientLight intensity={0.5} />
+        <directionalLight
+          position={[5, 5, 5]}
+          intensity={1}
+          castShadow
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+        />
+        <pointLight position={[-5, 5, -5]} intensity={0.5} />
 
-          {/* 인체 모델 */}
-          <HumanBody {...props} lumbarRiskLevel={riskLevel} />
+        {/* 인체 모델 */}
+        <HumanBody {...props} lumbarRiskLevel={riskLevel} />
 
-          {/* 심박수 애니메이션 */}
-          <HeartbeatIndicator position={[-0.3, 0.8, 0.4]} />
+        {/* 심박수 애니메이션 */}
+        <HeartbeatIndicator position={[-0.3, 0.8, 0.4]} />
 
-          {/* 카메라 컨트롤 */}
-          <OrbitControls
-            enablePan={true}
-            enableZoom={true}
-            enableRotate={true}
-            minDistance={2}
-            maxDistance={6}
-          />
+        {/* 카메라 컨트롤 */}
+        <OrbitControls
+          enablePan={true}
+          enableZoom={true}
+          enableRotate={true}
+          minDistance={2}
+          maxDistance={6}
+        />
 
-          {/* 그리드 (선택사항) */}
-          <gridHelper args={[5, 20, "#4a5568", "#2d3748"]} />
-        </Suspense>
+        {/* 그리드 (선택사항) */}
+        <gridHelper args={[5, 20, "#4a5568", "#2d3748"]} />
       </Canvas>
 
       {/* 위험도 표시 레전드 */}
@@ -301,7 +273,7 @@ export const Worker3DModel: React.FC<Worker3DModelProps> = (props) => {
                 : "bg-app-success"
             }`}
           />
-          <span className="text-app-muted">
+          <span className="text-white">
             요추 위험도:{" "}
             {riskLevel === "high"
               ? "높음"
@@ -312,11 +284,11 @@ export const Worker3DModel: React.FC<Worker3DModelProps> = (props) => {
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-app-accent" />
-          <span className="text-app-muted">안전 장비 착용</span>
+          <span className="text-white">안전 장비 착용</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-app-danger animate-pulse" />
-          <span className="text-app-muted">
+          <span className="text-black">
             심박수: {props.heartRate || 72} BPM
           </span>
         </div>
