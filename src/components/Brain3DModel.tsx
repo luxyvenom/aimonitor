@@ -96,6 +96,22 @@ const Brain: React.FC<{ cognitiveLoad: number }> = ({ cognitiveLoad }) => {
   );
 };
 
+// 자동 회전 래퍼 컴포넌트 (Canvas 내부에서 사용)
+const RotatingGroup: React.FC<{
+  enabled: boolean;
+  children: React.ReactNode;
+}> = ({ enabled, children }) => {
+  const groupRef = useRef<THREE.Group>(null);
+
+  useFrame((state) => {
+    if (enabled && groupRef.current) {
+      groupRef.current.rotation.y = state.clock.elapsedTime * 0.3;
+    }
+  });
+
+  return <group ref={groupRef}>{children}</group>;
+};
+
 // 메인 컴포넌트
 export const Brain3DModel: React.FC<Brain3DModelProps> = ({
   cognitiveLoad = 35,
@@ -103,19 +119,11 @@ export const Brain3DModel: React.FC<Brain3DModelProps> = ({
 }) => {
   const [currentCognitiveLoad, setCurrentCognitiveLoad] =
     useState(cognitiveLoad);
-  const rotationRef = useRef<THREE.Group>(null);
 
   // 인지 부하 prop 업데이트
   useEffect(() => {
     setCurrentCognitiveLoad(cognitiveLoad);
   }, [cognitiveLoad]);
-
-  // 자동 회전 애니메이션
-  useFrame((state) => {
-    if (autoRotate && rotationRef.current) {
-      rotationRef.current.rotation.y = state.clock.elapsedTime * 0.3;
-    }
-  });
 
   return (
     <div className="w-full h-full">
@@ -129,10 +137,11 @@ export const Brain3DModel: React.FC<Brain3DModelProps> = ({
         <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
         <pointLight position={[-5, 5, -5]} intensity={0.5} />
 
-        {/* 뇌 모델 */}
-        <group ref={rotationRef}>
+        {/* 자동 회전 그룹 */}
+        <RotatingGroup enabled={autoRotate}>
+          {/* 뇌 모델 */}
           <Brain cognitiveLoad={currentCognitiveLoad} />
-        </group>
+        </RotatingGroup>
 
         {/* 카메라 컨트롤 */}
         <OrbitControls
