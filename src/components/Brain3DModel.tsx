@@ -46,7 +46,6 @@ const Brain: React.FC<{ cognitiveLoad: number }> = ({ cognitiveLoad }) => {
     }
   };
 
-  const riskLevel = getRiskLevel();
   const riskColor = getRiskColor();
 
   // 인지 부하에 따른 emissive intensity 계산
