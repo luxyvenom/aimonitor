@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { Worker3DModel } from "../components/Worker3DModel";
 import { Realtime3DChart } from "../components/Realtime3DChart";
+import { Brain3DModel } from "../components/Brain3DModel";
 import { OntologyGraph } from "../components/OntologyGraph";
 import {
   generateMiniOntologyData,
   mockMiniOntologyData,
 } from "../data/mockOntology";
+import { hardcodedData3DChart } from "../data/hardcodedData3DChart";
 import type { OntologyGraphData, OntologyNode } from "../types/ontology.types";
 
 export const Dashboard: React.FC = () => {
@@ -21,6 +23,7 @@ export const Dashboard: React.FC = () => {
   >("low");
   const [ontologyData, setOntologyData] =
     useState<OntologyGraphData>(mockMiniOntologyData);
+  const [cognitiveLoad, setCognitiveLoad] = useState(35);
 
   // 실시간 데이터 시뮬레이션
   useEffect(() => {
@@ -57,6 +60,30 @@ export const Dashboard: React.FC = () => {
       const newData = generateMiniOntologyData();
       setOntologyData(newData);
     }, 4000); // 4초마다 업데이트
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // 인지 부하 데이터 업데이트 (hardcodedData3DChart에서 시뮬레이션)
+  useEffect(() => {
+    let dataIndex = 0;
+    
+    const interval = setInterval(() => {
+      // 데이터 배열을 순환하면서 인지 부하 업데이트
+      const currentData = hardcodedData3DChart[dataIndex];
+      if (currentData) {
+        setCognitiveLoad(currentData.cognitiveLoad);
+      }
+      
+      // 다음 인덱스로 이동 (순환)
+      dataIndex = (dataIndex + 1) % hardcodedData3DChart.length;
+    }, 2000); // 2초마다 업데이트
+
+    // 초기값 설정
+    const initialData = hardcodedData3DChart[0];
+    if (initialData) {
+      setCognitiveLoad(initialData.cognitiveLoad);
+    }
 
     return () => clearInterval(interval);
   }, []);
@@ -99,7 +126,7 @@ export const Dashboard: React.FC = () => {
           </div>
         </section>
 
-        {/* Row 3: Realtime 3D Chart + Trend Report */}
+        {/* Row 3: Realtime 3D Chart + Brain 3D Model */}
         <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
           <div className="bg-app-surface-soft border border-app-border/70 rounded-card shadow-card-subtle p-4 md:p-5">
             <h2 className="text-sm font-semibold mb-2">
@@ -115,6 +142,21 @@ export const Dashboard: React.FC = () => {
 
           <div className="bg-app-surface-soft border border-app-border/70 rounded-card shadow-card-subtle p-4 md:p-5">
             <h2 className="text-sm font-semibold mb-2">
+              인지 부하 3D 뇌 모델
+            </h2>
+            <p className="text-xs text-app-muted mb-3">
+              실시간 인지 부하를 3D 뇌 모델로 시각화합니다.
+            </p>
+            <div className="h-64 rounded-card bg-black/35 relative overflow-hidden">
+              <Brain3DModel cognitiveLoad={cognitiveLoad} autoRotate={false} />
+            </div>
+          </div>
+        </section>
+
+        {/* Row 4: Trend Report */}
+        <section className="grid grid-cols-1 gap-4 md:gap-6">
+          <div className="bg-app-surface-soft border border-app-border/70 rounded-card shadow-card-subtle p-4 md:p-5">
+            <h2 className="text-sm font-semibold mb-2">
               위험도 트렌드 & 라인별 히트맵
             </h2>
             <p className="text-xs text-app-muted mb-3">
@@ -126,7 +168,7 @@ export const Dashboard: React.FC = () => {
           </div>
         </section>
 
-        {/* Row 4: Knowledge Graph (Ontology) */}
+        {/* Row 5: Knowledge Graph (Ontology) */}
         <section className="grid grid-cols-1 gap-4 md:gap-6">
           <div className="bg-app-surface-soft border border-app-border/70 rounded-card shadow-card-soft p-4 md:p-5">
             <div className="flex items-center justify-between mb-3">
@@ -135,8 +177,8 @@ export const Dashboard: React.FC = () => {
                   관계 분석 (Knowledge Graph)
                 </h2>
                 <p className="text-xs text-app-muted">
-                  팔란티어 스타일의 데이터 관계 시각화. 작업자, 이벤트, 작업장
-                  간의 연결을 실시간으로 확인합니다.
+                  온톨로지 기반 데이터 관계 시각화. 작업자, 이벤트, 작업장 간의
+                  연결을 실시간으로 확인합니다.
                 </p>
               </div>
               <div className="flex items-center gap-2">

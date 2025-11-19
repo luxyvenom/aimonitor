@@ -7,8 +7,8 @@
  * 작업자 이름 목록
  */
 export const WORKER_NAMES = [
-  "김철수",
-  "이영희",
+  "한예호",
+  "이정수",
   "박민수",
   "정수진",
   "최동욱",
@@ -19,7 +19,7 @@ export const WORKER_NAMES = [
   "임하늘",
   "송민준",
   "윤서연",
-  "홍길동",
+  "김현우",
   "김영수",
   "이미영",
 ] as const;
@@ -37,4 +37,3 @@ export const SYSTEM_ACTIONS = [
   "작업 강도 조정 권고",
   "추가 모니터링 시작",
 ] as const;
-

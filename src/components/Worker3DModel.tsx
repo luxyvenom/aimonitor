@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Text, Sphere, Box } from "@react-three/drei";
+import { OrbitControls, Text, Sphere, Box, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { getRiskLevelHexColor } from "../utils/riskUtils";
 
@@ -21,6 +21,9 @@ const HumanBody: React.FC<Worker3DModelProps> = ({
   lumbarRiskLevel = "low",
 }) => {
   const bodyRef = useRef<THREE.Group>(null);
+  
+  // 인체 텍스처 로드
+  const bodyTexture = useTexture("/textures/human-body-texture.png");
 
   // 요추 위험도에 따른 색상
   const getRiskColor = () => {
@@ -62,7 +65,12 @@ const HumanBody: React.FC<Worker3DModelProps> = ({
 
       {/* 몸통 (상체) */}
       <Box args={[0.6, 0.8, 0.4]} position={[0, 0.8, 0]} castShadow>
-        <meshStandardMaterial color="#4a5568" />
+        <meshStandardMaterial 
+          map={bodyTexture}
+          color="#ffffff"
+          metalness={0.2}
+          roughness={0.8}
+        />
       </Box>
 
       {/* 안전 조끼 */}
