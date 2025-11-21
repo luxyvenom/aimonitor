@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import * as PlotlyModule from "react-plotly.js";
 import type { TrendReportData } from "../data/hardcodedTrendReport";
 import { hardcodedTrendReportData } from "../data/hardcodedTrendReport";
 
 // react-plotly.js의 default export가 객체일 수 있으므로 처리
+// CommonJS 모듈의 경우 default가 객체로 감싸질 수 있음
 const Plot =
   (PlotlyModule as any).default?.default ||
   (PlotlyModule as any).default ||
@@ -20,10 +21,8 @@ interface TrendReportChartProps {
 export const TrendReportChart: React.FC<TrendReportChartProps> = ({
   data,
 }) => {
-  const heatmapPlotRef = useRef<any>(null);
-  const trendPlotRef = useRef<any>(null);
   const [reportData, setReportData] =
-    React.useState<TrendReportData | null>(null);
+    useState<TrendReportData | null>(null);
 
   // 데이터 로드
   useEffect(() => {
@@ -35,25 +34,25 @@ export const TrendReportChart: React.FC<TrendReportChartProps> = ({
   }, [data]);
 
   // 히트맵 데이터 준비
-  useEffect(() => {
-    if (!reportData || !heatmapPlotRef.current) return;
+  const heatmapData = useMemo(() => {
+    if (!reportData) return null;
 
-    const heatmapData = reportData.heatmapData;
+    const heatmapDataPoints = reportData.heatmapData;
 
     // 작업장-팀 조합 목록 생성
     const workspaceTeamPairs = Array.from(
       new Set(
-        heatmapData.map((d) => `${d.workspace}-${d.team}`)
+        heatmapDataPoints.map((d) => `${d.workspace}-${d.team}`)
       )
     ).sort();
 
     // 날짜 목록
-    const dates = Array.from(new Set(heatmapData.map((d) => d.date))).sort();
+    const dates = Array.from(new Set(heatmapDataPoints.map((d) => d.date))).sort();
 
     // 히트맵 Z 데이터 (위험도 스코어)
     const z: number[][] = workspaceTeamPairs.map((pair) => {
       return dates.map((date) => {
-        const point = heatmapData.find(
+        const point = heatmapDataPoints.find(
           (d) => `${d.workspace}-${d.team}` === pair && d.date === date
         );
         return point ? point.riskScore : 0;
@@ -67,138 +66,131 @@ export const TrendReportChart: React.FC<TrendReportChartProps> = ({
       [1, "#ef4444"], // Red
     ];
 
-    const heatmapTrace = {
-      x: dates,
-      y: workspaceTeamPairs,
-      z: z,
-      type: "heatmap" as const,
-      colorscale: colorscale,
-      showscale: true,
-      colorbar: {
-        title: "위험도",
-        titleside: "right",
-        tickmode: "array",
-        tickvals: [0, 40, 70, 100],
-        ticktext: ["0", "40", "70", "100"],
+    return {
+      data: [
+        {
+          x: dates,
+          y: workspaceTeamPairs,
+          z: z,
+          type: "heatmap" as const,
+          colorscale: colorscale,
+          showscale: true,
+          colorbar: {
+            title: "위험도",
+            titleside: "right" as const,
+            tickmode: "array" as const,
+            tickvals: [0, 40, 70, 100],
+            ticktext: ["0", "40", "70", "100"],
+          },
+          hovertemplate:
+            "<b>%{y}</b><br>날짜: %{x}<br>위험도: %{z}<extra></extra>",
+        },
+      ],
+      layout: {
+        title: {
+          text: "라인별 위험도 히트맵",
+          font: { size: 14, color: "#111827" },
+        },
+        xaxis: {
+          title: "날짜",
+          tickangle: -45,
+        },
+        yaxis: {
+          title: "작업장-팀",
+        },
+        margin: { l: 120, r: 20, t: 50, b: 80 },
+        paper_bgcolor: "rgba(0,0,0,0)",
+        plot_bgcolor: "rgba(0,0,0,0)",
+        font: { color: "#6b7280", size: 11 },
       },
-      hovertemplate:
-        "<b>%{y}</b><br>날짜: %{x}<br>위험도: %{z}<extra></extra>",
+      config: {
+        displayModeBar: false,
+        responsive: true,
+      },
     };
-
-    const layout = {
-      title: {
-        text: "라인별 위험도 히트맵",
-        font: { size: 14, color: "#111827" },
-      },
-      xaxis: {
-        title: "날짜",
-        tickangle: -45,
-      },
-      yaxis: {
-        title: "작업장-팀",
-      },
-      margin: { l: 120, r: 20, t: 50, b: 80 },
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      font: { color: "#6b7280", size: 11 },
-    };
-
-    const config = {
-      displayModeBar: false,
-      responsive: true,
-    };
-
-    Plot.newPlot(heatmapPlotRef.current, [heatmapTrace], layout, config);
   }, [reportData]);
 
   // 추이 그래프 데이터 준비
-  useEffect(() => {
-    if (!reportData || !trendPlotRef.current) return;
+  const trendData = useMemo(() => {
+    if (!reportData) return null;
 
-    const trendData = reportData.trendData;
-    const dates = trendData.map((d) => d.date);
+    const trendDataPoints = reportData.trendData;
+    const dates = trendDataPoints.map((d) => d.date);
 
-    // 위험도 스코어 추이
-    const riskScoreTrace = {
-      x: dates,
-      y: trendData.map((d) => d.averageRiskScore),
-      type: "scatter" as const,
-      mode: "lines+markers" as const,
-      name: "평균 위험도",
-      line: { color: "#ef4444", width: 3 },
-      marker: { size: 6 },
-    };
-
-    // 신체 부하 평균
-    const physicalLoadTrace = {
-      x: dates,
-      y: trendData.map((d) => d.physicalLoadAvg),
-      type: "scatter" as const,
-      mode: "lines+markers" as const,
-      name: "신체 부하 평균",
-      line: { color: "#f59e0b", width: 2 },
-      marker: { size: 5 },
-      yaxis: "y2",
-    };
-
-    // 인지 부하 평균
-    const cognitiveLoadTrace = {
-      x: dates,
-      y: trendData.map((d) => d.cognitiveLoadAvg),
-      type: "scatter" as const,
-      mode: "lines+markers" as const,
-      name: "인지 부하 평균",
-      line: { color: "#8b5cf6", width: 2 },
-      marker: { size: 5 },
-      yaxis: "y2",
-    };
-
-    const layout = {
-      title: {
-        text: "전체 평균 위험도 추이",
-        font: { size: 14, color: "#111827" },
+    return {
+      data: [
+        // 위험도 스코어 추이
+        {
+          x: dates,
+          y: trendDataPoints.map((d) => d.averageRiskScore),
+          type: "scatter" as const,
+          mode: "lines+markers" as const,
+          name: "평균 위험도",
+          line: { color: "#ef4444", width: 3 },
+          marker: { size: 6 },
+        },
+        // 신체 부하 평균
+        {
+          x: dates,
+          y: trendDataPoints.map((d) => d.physicalLoadAvg),
+          type: "scatter" as const,
+          mode: "lines+markers" as const,
+          name: "신체 부하 평균",
+          line: { color: "#f59e0b", width: 2 },
+          marker: { size: 5 },
+          yaxis: "y2" as const,
+        },
+        // 인지 부하 평균
+        {
+          x: dates,
+          y: trendDataPoints.map((d) => d.cognitiveLoadAvg),
+          type: "scatter" as const,
+          mode: "lines+markers" as const,
+          name: "인지 부하 평균",
+          line: { color: "#8b5cf6", width: 2 },
+          marker: { size: 5 },
+          yaxis: "y2" as const,
+        },
+      ],
+      layout: {
+        title: {
+          text: "전체 평균 위험도 추이",
+          font: { size: 14, color: "#111827" },
+        },
+        xaxis: {
+          title: "날짜",
+          tickangle: -45,
+        },
+        yaxis: {
+          title: "위험도 스코어",
+          side: "left" as const,
+          range: [0, 100],
+        },
+        yaxis2: {
+          title: "부하 수준",
+          side: "right" as const,
+          overlaying: "y" as const,
+          range: [0, 100],
+        },
+        margin: { l: 60, r: 60, t: 50, b: 80 },
+        paper_bgcolor: "rgba(0,0,0,0)",
+        plot_bgcolor: "rgba(0,0,0,0)",
+        font: { color: "#6b7280", size: 11 },
+        legend: {
+          x: 0.5,
+          y: -0.2,
+          xanchor: "center" as const,
+          orientation: "h" as const,
+        },
       },
-      xaxis: {
-        title: "날짜",
-        tickangle: -45,
-      },
-      yaxis: {
-        title: "위험도 스코어",
-        side: "left",
-        range: [0, 100],
-      },
-      yaxis2: {
-        title: "부하 수준",
-        side: "right",
-        overlaying: "y",
-        range: [0, 100],
-      },
-      margin: { l: 60, r: 60, t: 50, b: 80 },
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      font: { color: "#6b7280", size: 11 },
-      legend: {
-        x: 0.5,
-        y: -0.2,
-        xanchor: "center",
-        orientation: "h",
+      config: {
+        displayModeBar: false,
+        responsive: true,
       },
     };
-
-    const config = {
-      displayModeBar: false,
-      responsive: true,
-    };
-
-    Plot.newPlot(
-      trendPlotRef.current,
-      [riskScoreTrace, physicalLoadTrace, cognitiveLoadTrace],
-      layout,
-      config
-    );
   }, [reportData]);
 
-  if (!reportData) {
+  if (!reportData || !heatmapData || !trendData) {
     return (
       <div className="h-full flex items-center justify-center text-xs text-app-muted">
         데이터 로딩 중...
@@ -210,12 +202,24 @@ export const TrendReportChart: React.FC<TrendReportChartProps> = ({
     <div className="h-full flex flex-col gap-4">
       {/* 히트맵 */}
       <div className="flex-1 min-h-0">
-        <div ref={heatmapPlotRef} className="w-full h-full" />
+        <Plot
+          data={heatmapData.data}
+          layout={heatmapData.layout}
+          config={heatmapData.config}
+          style={{ width: "100%", height: "100%" }}
+          useResizeHandler={true}
+        />
       </div>
 
       {/* 추이 그래프 */}
       <div className="flex-1 min-h-0">
-        <div ref={trendPlotRef} className="w-full h-full" />
+        <Plot
+          data={trendData.data}
+          layout={trendData.layout}
+          config={trendData.config}
+          style={{ width: "100%", height: "100%" }}
+          useResizeHandler={true}
+        />
       </div>
 
       {/* ESG 리포트 버튼 */}
