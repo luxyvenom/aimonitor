@@ -1,10 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import * as PlotlyModule from "react-plotly.js";
-import type {
-  TrendReportData,
-  HeatmapDataPoint,
-  TrendDataPoint,
-} from "../data/hardcodedTrendReport";
+import type { TrendReportData } from "../data/hardcodedTrendReport";
 import { hardcodedTrendReportData } from "../data/hardcodedTrendReport";
 
 // react-plotly.js의 default export가 객체일 수 있으므로 처리
