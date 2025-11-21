@@ -4,6 +4,8 @@ import { Worker3DModel } from "../components/Worker3DModel";
 import { Realtime3DChart } from "../components/Realtime3DChart";
 import { Brain3DModel } from "../components/Brain3DModel";
 import { OntologyGraph } from "../components/OntologyGraph";
+import { RiskScoreCard } from "../components/RiskScoreCard";
+import { TrendReportChart } from "../components/TrendReportChart";
 import {
   generateMiniOntologyData,
   mockMiniOntologyData,
@@ -23,7 +25,12 @@ export const Dashboard: React.FC = () => {
   >("low");
   const [ontologyData, setOntologyData] =
     useState<OntologyGraphData>(mockMiniOntologyData);
-  const [cognitiveLoad, setCognitiveLoad] = useState(35);
+  const [cognitiveLoad, setCognitiveLoad] = useState(
+    hardcodedData3DChart[0]?.cognitiveLoad ?? 35
+  );
+  const [physicalLoad, setPhysicalLoad] = useState(
+    hardcodedData3DChart[0]?.physicalLoad ?? 45
+  );
 
   // 실시간 데이터 시뮬레이션
   useEffect(() => {
@@ -64,26 +71,21 @@ export const Dashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // 인지 부하 데이터 업데이트 (hardcodedData3DChart에서 시뮬레이션)
+  // 인지 부하 및 신체 부하 데이터 업데이트 (hardcodedData3DChart에서 시뮬레이션)
   useEffect(() => {
-    let dataIndex = 0;
-    
+    let dataIndex = 1; // 초기값은 이미 useState에서 설정했으므로 1부터 시작
+
     const interval = setInterval(() => {
-      // 데이터 배열을 순환하면서 인지 부하 업데이트
+      // 데이터 배열을 순환하면서 인지 부하 및 신체 부하 업데이트
       const currentData = hardcodedData3DChart[dataIndex];
       if (currentData) {
         setCognitiveLoad(currentData.cognitiveLoad);
+        setPhysicalLoad(currentData.physicalLoad);
       }
-      
+
       // 다음 인덱스로 이동 (순환)
       dataIndex = (dataIndex + 1) % hardcodedData3DChart.length;
     }, 2000); // 2초마다 업데이트
-
-    // 초기값 설정
-    const initialData = hardcodedData3DChart[0];
-    if (initialData) {
-      setCognitiveLoad(initialData.cognitiveLoad);
-    }
 
     return () => clearInterval(interval);
   }, []);
@@ -120,8 +122,11 @@ export const Dashboard: React.FC = () => {
             <p className="text-xs text-app-muted mb-3">
               신체/인지 부하를 통합한 실시간 위험도 관제 카드입니다.
             </p>
-            <div className="h-64 md:h-80 rounded-card bg-black/30 flex items-center justify-center text-xs text-app-muted">
-              RiskScoreCard goes here
+            <div className="h-64 md:h-80 rounded-card bg-black/30 relative overflow-hidden">
+              <RiskScoreCard
+                physicalLoad={physicalLoad}
+                cognitiveLoad={cognitiveLoad}
+              />
             </div>
           </div>
         </section>
@@ -141,9 +146,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="bg-app-surface-soft border border-app-border/70 rounded-card shadow-card-subtle p-4 md:p-5">
-            <h2 className="text-sm font-semibold mb-2">
-              인지 부하 3D 뇌 모델
-            </h2>
+            <h2 className="text-sm font-semibold mb-2">인지 부하 3D 뇌 모델</h2>
             <p className="text-xs text-app-muted mb-3">
               실시간 인지 부하를 3D 뇌 모델로 시각화합니다.
             </p>
@@ -162,8 +165,8 @@ export const Dashboard: React.FC = () => {
             <p className="text-xs text-app-muted mb-3">
               재무/ESG 팀을 위한 비용 절감 및 위험도 감소 추이를 보여줍니다.
             </p>
-            <div className="h-64 rounded-card bg-black/35 flex items-center justify-center text-xs text-app-muted">
-              TrendReportChart goes here
+            <div className="h-[500px] md:h-[600px] rounded-card bg-black/35 relative overflow-hidden">
+              <TrendReportChart />
             </div>
           </div>
         </section>
