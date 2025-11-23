@@ -73,7 +73,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             <span className="inline-flex items-center gap-2 text-sm sm:text-base font-semibold">
               LIVE DASHBOARD{" "}
               <span className="hidden sm:inline text-xs text-app-muted align-middle">
-                · CEO Legal Shield
+                · Human-Risk Forecasting System
               </span>
             </span>
           </div>
